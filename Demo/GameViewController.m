@@ -57,6 +57,8 @@ static NSString *__cid;
     skView.showsFPS = YES;
     skView.showsNodeCount = YES;
     
+#pragma mark 测试按钮注册
+    
     UIButton *btnReportChara = [[UIButton alloc] initWithFrame:CGRectMake(5, 5, 100, 20)];
     [btnReportChara setTitle:@"登录区服" forState:UIControlStateNormal];
     [btnReportChara addTarget:self action:@selector(reportChara) forControlEvents:UIControlEventTouchUpInside];
@@ -65,9 +67,15 @@ static NSString *__cid;
     [btnPay setTitle:@"充值" forState:UIControlStateNormal];
     [btnPay addTarget:self action:@selector(payment) forControlEvents:UIControlEventTouchUpInside];
     
+    UIButton *btnExit = [[UIButton alloc] initWithFrame:CGRectMake(self.view.bounds.size.width - 105, 5, 100, 20)];
+    [btnExit setTitle:@"退出登录" forState:UIControlStateNormal];
+    [btnExit addTarget:self action:@selector(exit) forControlEvents:UIControlEventTouchUpInside];
+    
     [[self view] addSubview:btnReportChara];
     [[self view] addSubview:btnPay];
+    [[self view] addSubview:btnExit];
     
+#pragma mark 登录
     //首先订阅YMSDKDidFinalAuthNotification通知
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didFinalAuth) name:YMSDKDidFinalAuthNotification object:nil];
     
@@ -84,11 +92,16 @@ static NSString *__cid;
 
 - (void)alert:(NSString *)message
 {
+    [self alert:message confirm:nil];
+}
+
+- (void)alert:(NSString *)message confirm:(Action)callback
+{
     dispatch_async(dispatch_get_main_queue(), ^{
         UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"提示" message:message preferredStyle:UIAlertControllerStyleAlert];
         
         UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
-            
+            if(callback) callback();
         }];
         
         [alertController addAction:okAction];
@@ -99,17 +112,27 @@ static NSString *__cid;
 
 - (void)didFinalAuth
 {
-    //NSString * __nonnull openid  = [[YMSDK shared] openId]; //玩家账号的唯一标识符
-    //NSString * __nullable latestServerId = [[YMSDK shared] latestServerId]; //该账号最近一次登录的区服名称，如果未登录过区服则为nil
-    //NSDictionary * __nullable realnameInfo = [[YMSDK shared] realnameInfo]; //用户实名信息
-    //bool isInvalidRealname = [[YMSDK shared] isInvalidRealname]; //获取一个值，该值反映当前登录的用户是否未进行实名
-    //[[YMSDK shared] exit];
-    [self alert:[NSString stringWithFormat:@"%@ 登录成功", YMSDK.shared.openId]];
+    NSString * __nonnull openid  = [[YMSDK shared] openId]; //玩家账号的唯一标识符
+    NSString * __nullable latestServerId = [[YMSDK shared] latestServerId]; //该账号最近一次登录的区服名称，如果未登录过区服则为nil
+    NSDictionary * __nullable realnameInfo = [[YMSDK shared] realnameInfo]; //用户实名信息
+    bool isInvalidRealname = [[YMSDK shared] isInvalidRealname]; //获取一个值，该值反映当前登录的用户是否未进行实名
+    
+    [self alert:[NSString stringWithFormat:@"%@ 登录成功", openid]];
+}
+
+- (void)exit
+{
+    [[YMSDK shared] exit];
 }
 
 - (void)didExit
 {
-    [self alert:@"退出成功"];
+    [self alert:@"退出成功" confirm:^{
+        //2秒后重新登录
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+            [[YMSDK shared] auth];
+        });
+    }];
 }
 
 - (void)didCompletionPayment:(NSNotification *)notification
