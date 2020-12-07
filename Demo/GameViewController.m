@@ -34,7 +34,7 @@ static NSString *__cid;
 - (void)payment
 {
     NSString *orderId = [NSString stringWithFormat:@"%d", arc4random()];
-    NSInteger price = 600;
+    NSInteger price = 1;
     NSString *title = @"6元宝";
 
     [[YMSDK shared] paymentByCharacterId:__cid price:price title:title description:nil forOrderId:orderId];
@@ -113,9 +113,9 @@ static NSString *__cid;
 - (void)didFinalAuth
 {
     NSString * __nonnull openid  = [[YMSDK shared] openId]; //玩家账号的唯一标识符
-    NSString * __nullable latestServerId = [[YMSDK shared] latestServerId]; //该账号最近一次登录的区服名称，如果未登录过区服则为nil
-    NSDictionary * __nullable realnameInfo = [[YMSDK shared] realnameInfo]; //用户实名信息
-    bool isInvalidRealname = [[YMSDK shared] isInvalidRealname]; //获取一个值，该值反映当前登录的用户是否未进行实名
+    //NSString * __nullable latestServerId = [[YMSDK shared] latestServerId]; //该账号最近一次登录的区服名称，如果未登录过区服则为nil
+    //NSDictionary * __nullable realnameInfo = [[YMSDK shared] realnameInfo]; //用户实名信息
+    //bool isInvalidRealname = [[YMSDK shared] isInvalidRealname]; //获取一个值，该值反映当前登录的用户是否未进行实名
     
     [self alert:[NSString stringWithFormat:@"%@ 登录成功", openid]];
 }
